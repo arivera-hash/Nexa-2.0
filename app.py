@@ -18,8 +18,16 @@ def distancia_haversine(lat1, lon1, lat2, lon2):
 
 def obtener_ruta(lat1, lon1, lat2, lon2):
     url = f"http://router.project-osrm.org/route/v1/driving/{lon1},{lat1};{lon2},{lat2}?overview=full&geometries=polyline"
-    res = requests.get(url).json()
-    return polyline.decode(res['routes'][0]['geometry']) if res['code'] == 'Ok' else None
+    try:
+        response = requests.get(url)
+        # Verificamos si la respuesta es válida antes de intentar leerla como JSON
+        if response.status_code == 200:
+            res = response.json()
+            if res.get('code') == 'Ok':
+                return polyline.decode(res['routes'][0]['geometry'])
+        return None
+    except Exception:
+        return None
 
 # --- INTERFAZ DE USUARIO (SIDEBAR) ---
 st.sidebar.header("📍 Tu Viaje")
@@ -69,3 +77,4 @@ if btn_buscar:
         st_folium(m, width="100%", height=600)
     else:
         st.error("No se pudieron encontrar las ubicaciones.")
+
